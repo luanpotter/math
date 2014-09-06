@@ -1,0 +1,9 @@
+# use math:0
+# base ..........
+
+define functions like
+collection.map
+number.abs
+number.sign
+collection.size
+

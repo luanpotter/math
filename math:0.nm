@@ -1,0 +1,55 @@
+# base ..........
+
+# The \type superset
+\type = {
+  :boolean -> { :true -> §, :false -> § },
+  :number,
+  :set -> § # { x -> x @ \set },
+  :vector -> § @ \type:set,
+  :collection -> \type:set + \type:vector,
+  :function -> § @ \type:set,
+  :name -> § @ \type:set
+}
+
+# Replicating set names to \set
+\set:boolean = \type:boolean
+\set:number = \type:number
+\set:set = \type:set
+\set:vector = \type:vector
+\set:collection = \type:collection
+\set:function = \type:function
+\set:name = \type:name
+
+# Adding special numbers TODO replace with actual formulas
+\set:number:i = \sqrt[-1]
+\set:number:e = §
+\set:number:pi = §
+
+\set:number:phi = (1 + \sqrt[5])/2
+
+# Number sets
+\set:positive_integer = §
+\set:negative_integer = { x -> x = -a <= a @ \set:positive_integer }
+\set:natural = \set:positive_integer + {0}
+\set:integer = \set:natural + \set:negative_integer
+\set:rational = { x -> x = a/b <= a @ \set:integer & b @ \set:positive_integer }
+\set:irrational = §
+\set:real = \set:rational + \set:irrational
+\set:imaginary = { x -> x = i*a <= a @ \set:real }
+\set:complex = { x -> x = a + b*\type:number:i <= (a, b) @ \set:real }
+\set:number = \set:complex
+
+# Operators
+# \ $ § # etc. # what are these ??? language constructs?
+# () [] {} || # what are these ??? special operators?
++ - * / ^ \sqrt \root
+= < > <= >= !=
+& | !
+=>, <=, <=>
+->
+
+# Aliases
+\boolean = \type:boolean
+  \true = \type:boolean:true
+  \false = \type:boolean:false
+# TODO add all

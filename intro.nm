@@ -1,0 +1,398 @@
+# NewMath
+  # NewMath is a new way to write Math.
+  # It was created in the pursuit of a more formal language, without ambiguity.
+  # It can be totally written only with ascii characters, but there is a special module that adds paper/latex friendly symbols.
+  # It is succint, beautiful, and ready to be interpreted by a compiler in the future.
+  # This is a simple guide to NewMath. Some definitions here are recursive, but that is how math is in the end.
+
+  # Instructions
+    # A instruction is a single line of a NewMath file.
+    # All whitespace can be stripped out without change of meaning of the instruction.
+    # A instruction that does not start with '?' or '//' is an assertion.
+    # If an assertion is made that cannot evaluate to true, the program will end with an exception.
+      # Example:
+      a = 3
+      a = 4 # Error! \true expected, \false found
+
+      b = 3
+      b # Error! \true expected, 3 found
+
+      f[x @ \natural] = x + 1
+      f[-2] # Error! \true expected, \undefined found
+
+      c = 1 / 0 # An exception may be thrown here, if config:raiseOnUndefined is set to true
+      c # Error! \true expected, \undefined found
+
+  # Expressions
+    # An expression is any instruction that does not start with '/', or everything following the leading '?'.
+    # An expression always evaluate to a value, even if it is \undefined.
+    # An expression can be formed in two ways:
+      # expression operator expression
+        # Examples: a = 3, 1 + 7, (3 * k) + k
+      # value
+        # Examples: a, 5, /i
+
+  # Names
+    # Names can be any string.
+    # Names should be written within ' (single quotes), with \' and \\ being escaped to ' and \, respectivelly.
+      # Example: 'hey', 'this is very @#$$%" odd \\\' name\\'
+    # Simple names are names that contain only letters, but may start with a '\' or end with '?'.
+      # Example: 'hey', 'odd?', '\type', '\prime?'
+      # Simple names can be written alternativelly without the single quotes.
+    # Names starting with '\' are reserved for the language.
+
+  # Variables
+    # A variable is basically a name, that has a value.
+    # Variables can be assigned to values, and when they are used, they are refering to their values.
+      a = 3 # \true, because now a evaluates to 3
+    # If you want to refer to the name itself, you can prefix it with the ':' character.
+      ? :a = 3 # \false
+      ? :'12' = :(10 + 2) # \true
+    # Scope
+      # Each variable has a scope, that refers to its place of declaration.
+      # One can have variables with the same name in different scopes, though it is not recomended.
+      # The variable is searched in the most inner scope first
+      a = 2
+      b = 3
+      f = [b] -> a + b
+      ? f[5] # 7
+
+  # Types
+    # There are a few types which a variable can assume.
+    # Actually, everything has a type in NewMath; so names, expressions and even operators have types and can be accessed.
+    # The \type pre-defined name refers to the set of all types. This is perhaps the most important set of the language, because it contains, within its sub-sets, everything (including itself).
+    # Each type within \type is actually a set of all elements of that type. So we can use the @ (\in) operator to determine type.
+    # Example:
+      ([x] -> x + 1) @ \type:function # true, because \type:function is the set that contains all functions
+      (1 + 2) @ \type:set # false, 1 + 2 is a \type:number, not a set
+      # But
+      (1 + 2) @ \type:set:integer # true, the set set has names for important sets.
+    # This definitions may be a little abstract, but once the types are defined, named set values, @ operator, functions and everything else will be explained.
+
+    # As said, the \type superset contains all types:
+
+    # Boolean
+      # Boolean values can have simply two values, \type:boolean:true or \type:boolean:false.
+      # If \ names shorthands are enabled (default), you can simply use \true and \false.
+      # They are very important to maintain type integrability when coercion is disabled (default).
+      # By default, an expression that is an assertion is always expected to be \true.
+
+    # Number
+      # A number represent any complex number, like 1, 7, -\pi and 5 + \sqrt[2] + 7*\i.
+      # Note that some numbers can only be expressed by an expression with operators.
+      # It is still a number, the same way 1 + 2 evalutes to a number - the only difference is that 1 + 2 can and will be simplified.
+
+    # Set
+      # The most important structure of the language is the set. There are several ways to define one.
+        # As an enumeration
+          setOne = { 1, 2, 7, \pi, ([x] = x + 2) }
+        # As a function
+          setTwo = { x @ \natural -> (x < 5) }
+          ? setTwo = { 0, 1, 2, 3, 4 } # true
+          # Not to be confused with:
+            setTwoB = { [x @ \natural] -> (x < 5) }
+            ? 2 @ setTwoB # false
+            ? ([x @ \natural] -> (x > 5)) @ setTwoB # true
+          # Or also
+            f = [x @ \natural] -> (x < 5)
+            setThree = { ->f } # f must take exactly one parameter
+        # As a map
+          my_name = :z
+          setFour = { :x -> 1, :y -> 2, my_name -> 5, 4 }
+          ? setFour:x # 1
+          ? setFour:y = 2 # true
+          ? setFour:z - 4 = 1 # true
+          ? setFour:4 = \undefined # true
+
+          ? 4 @ setFour # true
+          ? 2 @ setFour # true
+          ? x @ setFour # false
+        # If try to defined a named set without a name, an error will be thrown:
+          someSet = { 2 -> 4 } # Error! Set names must be of the type Name
+        # As a interval over the \real numbers
+        # TODO REVIEW |_| is the vector with _ inside!!
+          # This is a syntax sugar (sugar:interval)
+          setFive = 3 |_ 5
+          setSix = { x @ \real -> x >= 3 \and x < 5 }
+          ? setFive = setSix # true
+          # Formally:
+           _  = [a @ \real, b @ \real] -> { x @ \real -> a < x \and x < b }
+          |_  = [a @ \real, b @ \real] -> { x @ \real -> a <= x \and x < b }
+           _| = [a @ \real, b @ \real] -> { x @ \real -> a < x \and x <= b }
+          |_| = [a @ \real, b @ \real] -> { x @ \real -> a <= x \and x <= b }
+
+    # Vectors and Matrices
+      # A Vector can be defined by surrounding comma separeted elements with '|' (vertical bar) characters.
+      # A Matrix is just a Vector of Vectors. Therefore, it can have any amount of dimensions.
+        matrix = | | 1, 2 |, | 3, 4 |, | \true, \pi | |
+      # Matrix have defined the brackets ('[]') operator.
+      # If you index a vector with an integer n, you can have three differente outcomes:
+        # n > 0 => returns the nth element
+        # n < 0 => returns the (-n)th element from the end
+        # n = 0 => returns the the cardinality of the set if it is finite, and TODO... if infinite.
+
+        vector = | | 1, 2 |, | 3, 4 |, | \true, \pi | |
+        ? vector[1][2] # 2
+        ? vector[3] # | \true, \pi |
+        ? vector[0] # 3
+        ? vector[3.4] # \undefined
+
+      # Vectors can be infinite. In this case, the function notation, the same for the Sets, must be used
+        limitless = | x @ \natural -> x > 5 |
+        ? limitless[3] # 8
+        ? limitless[42] = 47 # true
+      # Note that the order is crescent by default, when dealing with numbers.
+      # But if you make a vector of something that is not a number using this notation, no order is guaranteed.
+
+      # Ordering
+        # If you index a vector with a function, it will return a new vector ordered crescently by the results of that function.
+        ordered = | x @ \natural -> x > 3 \and x < 7 |[ [x] -> -x ]
+        ? ordered # | 6, 5, 4 |
+        # The function must return a number, of course.
+
+        # You can pass a Vector of functions to be used as tiebreaker.
+        reordered = | x @ \natural -> x > 3 \and x < 9 |[ | [x] -> x % 2, [x] -> -x | ]
+        ? reordered # | 8, 6, 4, 9, 7, 5 |
+
+        # Note that, depending or the order choose, the elements cannot be accesed!
+          # For example:
+
+          weirdVector1 = | x @ \integer -> x > 0 |[ [x] -> x ] # default ordering
+          ? weirdVector1[1] # 1
+          ? weirdVector1[-1] # \undefined
+
+          weirdVector2 = | x @ \integer -> x < 0 |[ [x] -> x ] # default ordering
+          ? weirdVector2[1] # \undefined
+          ? weirdVector2[-1] # -1
+
+          weirdVector3 = | x @ \real -> \true |
+          ? weirdVector3[1] # \undefined
+          ? weirdVector3[-1] # \undefined
+
+          # Sometimes there are no first or last elements! But the vector is well defined.
+
+        # Since the purpose of a Vector is to be ordered (unlike the Set), not order it completely is an extremelly bad pratice.
+        'randomness' = | x \@function -> [x] = a*x + b <= ((a, b) @ \real) \and a != 0 |
+        'not yet...' = randomness[ [x @ \function] -> x[1] ] # order by a + b, still ambiguous
+        'perfect!'   = randomness[ | [x @ \function] -> x[1] - x[0], [x @ \function] -> x[0] | ] # order by a and then b
+        # By default, the compiler will give an error if a Vector is not totally ordered.
+        # Note that some sets cannot be totally ordered. But then it doesn't make sense to make a vector out of them.
+      
+      # A List, or Sequence, is just an ordered set, and can be represented by a vector.
+        listOne = | 1, 2, 3 |
+        listTwo = | 3, 2, 1 |
+        ? listOne = listTwo # false
+
+    # Collection
+      # A collection is a type that represents a list of values, being either a set or a vector (sequence).
+      # So \type:collection = \type:set + \type:vector
+      # About collections in general:
+        # You can index a collection of 0 to get it's cardinality if it is finite. # TODO else?
+          # This is particularly interesting in vectors, but it is a bit odd in sets.
+          # You can use the alternative function size to get it's size too:
+
+          size = [c @ \type:collection] -> c[0]
+          a = { 1, 2, 3 }
+          ? size[a] # 3
+          ? a.size # 3
+        # You can index a collection with a function, or a vector of functions, to order it.
+          # The result will always be a Vector, of course.
+          # The functions passed must take elements of the collection as arguments and return numbers.
+          # Be extra careful when ordering with an infinite vector of functions. Their order is vital.
+
+    # Functions
+      # A function is an expression that takes a list of arguments and returns a value.
+      # There are several syntaxes to write it out.
+      # Fundamental Syntax
+        a = -1
+        [x, y, z] -> 2*x + 1*y + a*z
+        # Where x, y, z are parameters, and a is evaluated.
+      # Shorthand Syntax
+        # When assigning, instead of
+        f = [x] -> x + 1
+        # TODO remove might be inconsistent ! to dangeours ! if x is defined, meaning change ! There is also the sugar syntax: //TODO name sugar, add to list
+        f[x] = x + 1
+      # Invocation
+        # In order to invoke or call a function, just use the [] operators:
+          f = [x] -> 2*x + 1
+          ? f[2] # 5
+          # Note that you can also invoke an annonimous function:
+          ? ([x] -> x + 2)[4] # 6
+          Or even
+          ? ([x] -> x + 2)([4] - [2]) # 2
+        # Dot syntax
+          # You can also use the dot syntax to call a function that takes at least one parameter
+          contains = [x @ \set, y] -> (y @ x)
+          set = { 1, 2, 4 }
+          ? contains[set, 3] # \false
+          ? set.contains[2] # \true
+          # The first parameter is written first, then the dot ('.') operator, and the the rest of the argument list within brackets ('[]').
+          # If there is exatly one argument, the trailing brackets are optional.
+          odd? = [x @ \integer] -> (x % 2 = 1)
+          4.odd? # \false
+          31.odd?[] # \true
+          { 1, 2 }.odd? # \undefined
+
+    # Operators
+      # A operator is a particular set of functions that can be accessed in yet another particular way.
+      # By default, you can't overwrite or create new operators. But you can enable that via config:operatorOverwriting or config:operatorCreation
+      # When doing so, you can call the function on /functions:add_operator, passing the function name, to mark it as an operator, and also /functions:remove_operator if wanted.
+      # These functions will be undefined if config:operatorCreation is not set.
+      # For example:
+        * = [x @ \natural, y @ \natural] -> (sum[1, y, [k] -> x])
+        /functions:add_operator[:*] # remember to pass the operator name, not it's value!
+        # Note that here we are only defining multiplication for natural numbers.
+        # There is no problem there, as the domain can be expanded later:
+          * = [x @ (\integer - \natural), y @ \natural] -> -(-x * y)
+          * = [x @ \natural, y @ (\integer - \natural)] -> -(-y * x)
+          * = [x @ (\integer - \natural), y @ (\integer - \natural)] -> (-y) * (-x)
+        # This is true to all functions
+        # You cannot redefine a function in the same domain as before, though, that will give an error as it will evaluate to false unless they are absolutely equal.
+
+    # Keywords
+      # A keyword is an element of a finite set of objects that can be used to control the flow of the file.
+      # For example, in normal math, people tend to use words like Let, Take, Then, Therefore, If, Else...
+      # Other important flow control keywords are words like: Proof, Example, Exercise, Hypothesis...
+      # There is no standard or language agnosticity.
+      # This set standarize these keywords.
+      # Since it is finite, all elements will be listed with explanations and examples.
+
+      # The three must fundamental control flow defines what a piece of code is (proof, example, exercise, hypothesis, etc).
+      # These are: \begin, \definition, \export, \hypothesis, \proof, \end
+      # They have easy accessors if enabled, otherwise must be accessed via \type:keywords
+      # There is yet another easy accessor for \definition: \def.
+      # Every block of code must be within a \begin \end block.
+      # Inside this block, there are sub-blocks, and every code must be within the sub-blocks.
+      # You can create a new block inside a sub-block, but never a sub-block directly inside a sub-block.
+      //TODO define
+      # The sub-blocks are:
+        # definition : 
+        # hypothesis : 
+        # proof : 
+        # export : This sub_block should only contain a name
+
+      //TODO add other keywords such as if, else, etc
+
+    # Undefined
+      # \undefined name is used to represent values that are not defined or that cannot be defined. For example:
+        b = 3
+        ? a # \undefined
+        c = (a = b) # c = \undefined
+
+        c = 1 / 0 # \undefined
+        
+        f[x @ \natural] = x + 1
+        ? f[3.5] # \undefined
+
+        (a = 3) \or (a = 5)
+        ? a = 4 # false
+        ? a = 3 # /undefined
+
+  # Special Characters
+    # §: Axiom
+      # Math axiom. In the programming language, it means it is implemented in native language.
+        \true = §
+      # Syntax sugar (sugar:shortAximon):
+        \type:number = § @ \type:set
+        # Note that this last syntax could also be written in two instructions:
+        \type:number = §
+        \type:number @ \type:set
+    # #: Comment
+      # Syntax: code # comment
+      a = 25 # a is a number
+    # ?: Doubt
+      # Syntax: ? expression
+      a = \sqrt[2] ^ \sqrt[2]
+      ? a \in \rationals
+      # This is used to evaluate a value on the machine, or to express to your reader that this expression is the one you are trying to evaluate.
+    # $: Meta instruction
+      # Syntax: $ metaInstruction
+      # This instruction is interpreted by the compiler
+      # Examples: $ enable #feature, $ disable #feature, $ use #spec, $ require #file
+      // TODO spaces here can't be removed!!!
+      $ use math:1 strict # use version 1 of NewMath, on strict mode
+      $ base ..........  # use base 10 for the numbers
+      $ disable sugar:short_axiom
+      $ enable sugar:interval
+      $ require calculus.nm
+
+      $ enable config:raiseOnUndefined
+      $ enable config:custom:myConfig1
+      $ disable config:custom:myConfig2
+
+      $ if config:custom:myCustom1
+        a = 3
+      $ elsif config:custom:myCustom2
+        a = 2
+      $ else
+        a = 0
+      $ end
+      ? a.odd? # true
+      a = b # Error! Name 'a' was set to \undefined.
+
+    \type -> {
+      :boolean -> { :true -> §, :false -> § },
+      :set -> § # recursivelly, this is the set of all sets: \set = { x -> x @ \set },
+      :list -> § @ \type:set,
+      :number -> § @ \type:set,
+      :function -> § @ \type:set,
+
+      :collection -> { x:set -> \type:set, :list -> \type:list }
+    }
+
+    # Functions def
+    map = [set @ \set, f @ \function] -> { x -> ((x = f[k]) <= k @ \set) }
+    { 1, 2, 3 }.map[[x] -> 2*x] # { 2, 4, 6 }
+
+    # Note:
+    ? \type:set @ \type:set # true
+    ? \type @ \type:set # true
+    ? \type:set @ \type # true
+
+    # Aliases:
+    \boolean = \type:boolean
+      \true = \type:boolean:true
+      \false = \type:boolean:false
+    \number = \type:number
+      \pi = \number:pi
+      \fi = \number:fi
+      \i = \number:i
+      \e = \number:e
+    \collection = \type:collection
+    \set = \type:set
+      \natural = \set:natural
+      \integer = \set:integer
+      \rational = \set:rational
+      \real = \set:real
+      \complex = \set:complex
+    \list = \type:list
+    \function = \type:function
+    
+    Add [], ,, :, . (7.6 vs 7.'6'), {}, %{}
+    ':':
+      x:a <> x.type = a
+
+  Type
+    Boolean: { \true, \false }
+    Number: { \pi, \fi, \e, \i, ... }
+      Examples: 1, \pi, \sqrt(2) + 4\i
+    Collection:
+      Set: {}, {2, 3} { x -> P[x] }
+      Sequence: |1, 2|
+    Function:
+      Regular Notation:
+        f = ([x, y] -> x + y)
+        f[x, y] = x + y
+      Operator Notation
+      Property Notation
+    Keywords: # review this TODO
+      Flow Keyword: let, if
+      Control Keyword: begin_proposition, begin_proof, end
+    Name
+
+  Name/Value Conversion:
+    '1 + 2'.to_expression # 3
+    (1 + 2).to_name # '3'
+
+    '3' = 7
+    ? (1 + 2).to_name.value + 3 # 10

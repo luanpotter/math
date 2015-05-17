@@ -1,0 +1,17 @@
+# This is one of the most beautiful proofs out there, written in New Math as an example.
+
+/begin
+  /hypothesis
+    /exists (a, b) @ /irrational => a^b @ /rational
+  /proof
+    /let[t = sqrt(2) ^ sqrt(2)]
+    t @ /real
+    /if[t @ /rational]
+      a = sqrt(2), b = sqrt(2) => \exists (a, b)
+    /else
+      t @ /irrational
+      t ^ sqrt(2) = (sqrt(2) ^ sqrt(2)) ^ sqrt(2) = sqrt(2) ^ 2 = 2 @ \rational
+      a = t, b = sqrt(2) => \exists (a, b)
+    /end
+/end
+

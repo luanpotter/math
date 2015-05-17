@@ -7,7 +7,7 @@
 
   # Instructions
     # A instruction is a single line of a NewMath file.
-    # All whitespace can be stripped out without change of meaning of the instruction.
+    # All whitespace can be stripped out without change of meaning of the instruction. OUTDATED! REVIEW THIS eg a b == ab ?
     # A instruction that does not start with '?' or '//' is an assertion.
     # If an assertion is made that cannot evaluate to true, the program will end with an exception.
       # Example:
@@ -36,8 +36,8 @@
     # Names can be any string.
     # Names should be written within ' (single quotes), with \' and \\ being escaped to ' and \, respectivelly.
       # Example: 'hey', 'this is very @#$$%" odd \\\' name\\'
-    # Simple names are names that contain only letters, but may start with a '\' or end with '?'.
-      # Example: 'hey', 'odd?', '\type', '\prime?'
+    # Simple names are names that contain only letters, numbers and underscores, and do not start with numbers, but may start with a '\' or end with '?'.
+      # Example: 'hey', 'odd?', '\type2D', '\prime?', '_wat?'
       # Simple names can be written alternativelly without the single quotes.
     # Names starting with '\' are reserved for the language.
 
@@ -253,7 +253,7 @@
       # A keyword is an element of a finite set of objects that can be used to control the flow of the file.
       # For example, in normal math, people tend to use words like Let, Take, Then, Therefore, If, Else...
       # Other important flow control keywords are words like: Proof, Example, Exercise, Hypothesis...
-      # There is no standard or language agnosticity.
+      # Currently, there is no standard or language agnosticity.
       # This set standarize these keywords.
       # Since it is finite, all elements will be listed with explanations and examples.
 
@@ -270,6 +270,25 @@
         # hypothesis : 
         # proof : 
         # export : This sub_block should only contain a name
+     # So for example:
+       # given
+         factors [n @ \naturals] -> {k @ \naturals -> k <= n \and n % k = 0}
+         prime = [n @ \naturals] -> n.factors.size = 2
+       # then one could write
+       \begin
+         \hypothesis
+           (x @ \naturals) \and (x % 2 = 0) \and (x > 2) => x.prime
+         \proof
+           (x % 2 = 0) => 2 @ x.factors
+           {1, 2, x} \subset c.factors
+
+           x > 2 => 2 != x
+           2 != x \and 2 != 1 => {1, 2, x}.size = 3
+
+           x.factors.size >= {1, 2, x}.size >= 3
+           x.factors.size != 2
+           x.prime
+       \end
 
       //TODO add other keywords such as if, else, etc
 
